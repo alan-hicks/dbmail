@@ -1323,8 +1323,10 @@ int auth_validate(ClientBase_T *ci, const char *username, const char *password, 
 	}
 
 	/* the shared mailbox user should not log in! */
-	if (strcmp(username, PUBLIC_FOLDER_USER) == 0)
+	if (strcmp(username, PUBLIC_FOLDER_USER) == 0) {
+		TRACE(TRACE_WARNING, "Shared mailbox user [%s] should not log in!", username);
 		return 0;
+	}
 
 	memset(real_username,'\0', sizeof(real_username));
 	
@@ -1339,16 +1341,20 @@ int auth_validate(ClientBase_T *ci, const char *username, const char *password, 
 			return DM_EQUERY;
 	}
 
-	if (! auth_user_exists(real_username, user_idnr))
+	if (! auth_user_exists(real_username, user_idnr)) {
+		TRACE(TRACE_DEBUG, "username [%s] does not exist", username);
 		return 0;
+	}
 	
 	if (! (ldap_dn = dm_ldap_user_getdn(*user_idnr))) {
-		TRACE(TRACE_ERR,"unable to determine DN for user");
+		TRACE(TRACE_ERR,"unable to determine DN for user [%s]", username);
 		return 0;
 	}
 
-	if (! db_user_active(*user_idnr))
+	if (! db_user_active(*user_idnr)) {
+		TRACE(TRACE_ERR,"User [%s] is inactive", username);
 		return 0;
+	}
 
 	/* now, try to rebind as the given DN using the supplied password */
 	TRACE(TRACE_DEBUG, "rebinding as [%s] to validate password", ldap_dn);

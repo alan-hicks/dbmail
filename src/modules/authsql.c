@@ -334,12 +334,15 @@ int auth_validate(ClientBase_T *ci, const char *username, const char *password, 
 			tuser = (char *)Cram_getUsername(ci->auth);
 		} else {
 			TRACE(TRACE_DEBUG, "username or password is empty");
-			return FALSE;
+			return 0;
 		}
 	}
 
 	/* the shared mailbox user should not log in! */
-	if (strcmp(tuser, PUBLIC_FOLDER_USER) == 0) return 0;
+	if (strcmp(tuser, PUBLIC_FOLDER_USER) == 0) {
+		TRACE(TRACE_WARNING, "Shared mailbox user [%s] should not log in!", tuser);
+		return 0;
+	}
 
 	strncpy(real_username, tuser, DM_USERNAME_LEN-1);
 	if (db_use_usermap()) {  /* use usermap */
@@ -351,11 +354,15 @@ int auth_validate(ClientBase_T *ci, const char *username, const char *password, 
 	}
 	
 	/* lookup the user_idnr */
-	if (! auth_user_exists(real_username, user_idnr)) 
-		return FALSE;
+	if (! auth_user_exists(real_username, user_idnr)) {
+		TRACE(TRACE_DEBUG, "username [%s] does not exist", username);
+		return 0;
+	}
 
-	if (! db_user_active(*user_idnr))
-		return FALSE;
+	if (! db_user_active(*user_idnr)) {
+		TRACE(TRACE_ERR,"User [%s] is inactive", username);
+		return 0;
+	}
 
 	int valid = 0;
 	if (! (valid = db_user_validate(ci, "passwd", user_idnr, password))) {
@@ -366,7 +373,6 @@ int auth_validate(ClientBase_T *ci, const char *username, const char *password, 
 		*user_idnr = 0;
 
 	return valid;
-
 }
 
 uint64_t auth_md5_validate(ClientBase_T *ci UNUSED, char *username,
