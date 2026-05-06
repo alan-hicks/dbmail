@@ -10,6 +10,8 @@ All notable changes to this project will be documented in this file.
 - Fix #522 re PLAIN authentication
 - Fix deletion by non-existent UID thanks to mviazovskyi
 - auth ldap now checks for dbmail_users = active
+- Configure scripts updated to Autoconf 2.73
+- auth failure logging improved
 
 ## [3.5.5] - 2025-10-01
 - Version bump to 3.5.5
