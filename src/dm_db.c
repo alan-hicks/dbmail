@@ -334,10 +334,12 @@ Connection_T db_con_get(void)
 	unsigned int i=0; int k=0; Connection_T c = NULL;
 	while (! c) {
 		if (connection_pool_stopped) {
-			if (i % 5 == 0 || i >= db_params.connection_pool_timeout)
-				TRACE(i >= db_params.connection_pool_timeout ? TRACE_EMERG : TRACE_ALERT,
-				      "Connection pool stopped for [%u] sec%s", i,
-				      i >= db_params.connection_pool_timeout ? ", timed out, exiting" : "");
+			if (i >= db_params.connection_pool_timeout) {
+				TRACE(TRACE_ALERT, "Connection pool stopped for [%u] sec, timed out, exiting", i);
+				exit(EX_TEMPFAIL);
+			}
+			if (i % 5 == 0)
+				TRACE(TRACE_ALERT, "Connection pool stopped for [%u] sec", i);
 			sleep(1);
 			i++;
 			continue;
@@ -353,7 +355,7 @@ Connection_T db_con_get(void)
 		END_TRY;
 		if (c) break;
 		if((int)(i % 5)==0) {
-			TRACE(TRACE_ALERT, "Thread is having trouble obtaining a database connection. Try [%d]", i);
+			TRACE(TRACE_ALERT, "Thread is having trouble obtaining a database connection. Try [%u]", i);
 			k = ConnectionPool_reapConnections(pool);
 			TRACE(TRACE_INFO, "Database reaper closed [%d] stale connections", k);
 		}

@@ -7,7 +7,7 @@ extern char configFile[PATH_MAX];
 extern DBParam_T db_params;
 
 /*
- * Number of threads competing for connections simultaneously.
+ * Number of worker threads that hit the stopped pool simultaneously.
  * Matches the max_db_connections=20 setting from the production crash scenario.
  */
 #define TEST_THREAD_COUNT 20
@@ -23,7 +23,7 @@ void setup(void)
 {
 	config_get_file();
 	config_read(configFile);
-	configure_debug(NULL, 511, 0);
+	configure_debug(NULL, 511, 511);
 	GetDBParams();
 	db_connect();
 	db_params.connection_pool_timeout = 2;
@@ -43,8 +43,11 @@ static void *get_connection_thread(void *arg)
 }
 
 /*
- * Verify db_con_get() behaviour when the pool is stopped while multiple
- * threads are competing for connections:
+ * Verify db_con_get() exits with EX_TEMPFAIL once a stopped connection pool
+ * stays stopped past connection_pool_timeout. The pool is stopped before the
+ * threads are released, so each one deterministically takes the stopped branch
+ * and waits out the timeout -- this validates the timeout-exit path, not
+ * connection contention.
  *
  * Requires CK_FORK=yes (the default) because the test exits the process.
  */
@@ -53,14 +56,17 @@ START_TEST(test_db_pool_exits_after_timeout)
 	pthread_t threads[TEST_THREAD_COUNT];
 	int i;
 
-	pthread_barrier_init(&all_threads_ready, NULL, TEST_THREAD_COUNT + 1);
+	ck_assert_int_eq(pthread_barrier_init(&all_threads_ready, NULL,
+	                                      TEST_THREAD_COUNT + 1), 0);
 
 	for (i = 0; i < TEST_THREAD_COUNT; i++)
-		pthread_create(&threads[i], NULL, get_connection_thread, NULL);
+		ck_assert_int_eq(pthread_create(&threads[i], NULL,
+		                                get_connection_thread, NULL), 0);
 
-	/* Stop the pool, then release all threads at once.
-	 * Reproduces a race where threads try to get a connection
-	 * from a stopped pool.
+	/* Stop the pool before releasing the threads, so every thread finds
+	 * connection_pool_stopped already set when it calls db_con_get().
+	 * This exercises the timeout path: all threads wait out
+	 * connection_pool_timeout and the process exits with EX_TEMPFAIL.
 	 */
 	db_disconnect();
 	pthread_barrier_wait(&all_threads_ready);

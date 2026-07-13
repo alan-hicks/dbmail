@@ -520,14 +520,35 @@ void GetDBParams(void)
 		db_params.query_timeout = 300000;
 
 	if (config_get_value("connection_pool_timeout", "DBMAIL",
-	                     timeout_string) < 0)
+	                     timeout_string) < 0) {
 		TRACE(TRACE_DEBUG,
 		      "error getting config! [connection_pool_timeout]");
-		if (strlen(timeout_string) != 0)
+	}
+	if (strlen(timeout_string) != 0) {
+		errno = 0;
+		unsigned long timeout_value = strtoul(timeout_string, NULL, 10);
+		/* strtoul() accepts a leading '-' (negates into a huge unsigned)
+		 * and flags overflow via ERANGE; it also returns unsigned long,
+		 * which is wider than connection_pool_timeout (unsigned int) on
+		 * LP64, so a value in (UINT_MAX, ULONG_MAX] would survive the cast
+		 * as a large finite timeout. Any of these would make the wait loop
+		 * effectively never time out, so fall back to the default. */
+		if (errno == EINVAL || errno == ERANGE ||
+		    timeout_value > UINT_MAX ||
+		    strchr(timeout_string, '-') != NULL) {
+			TRACE(TRACE_WARNING, "invalid connection_pool_timeout [%s], using default", timeout_string);
+			db_params.connection_pool_timeout = 0;
+		} else
 			db_params.connection_pool_timeout =
-				(unsigned int) strtoul(timeout_string, NULL, 10);
-		else
-			db_params.connection_pool_timeout = 30;
+				(unsigned int) timeout_value;
+	} else {
+		db_params.connection_pool_timeout = DEFAULT_CONNECTION_POOL_TIMEOUT;
+	}
+
+	/* a zero/garbage value would make db_con_get exit immediately whenever
+	 * the pool is stopped, including during a transient reconnect */
+	if (db_params.connection_pool_timeout == 0)
+		db_params.connection_pool_timeout = DEFAULT_CONNECTION_POOL_TIMEOUT;
 
 	if (strcmp(db_params.pfx, "\"\"") == 0) {
 		/* FIXME: It appears that when the empty string is quoted
