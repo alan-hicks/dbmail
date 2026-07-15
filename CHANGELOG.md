@@ -1,7 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [tba]
+## [3.5.6] - 2026-07-15
 - Config option reuseport added thanks to benibr
 - Database pool debug info added for size and active
 - Docker EXPOSE ports removed thanks to svalcken
