@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 - auth ldap now checks for dbmail_users = active
 - Configure scripts updated to Autoconf 2.73
 - auth failure logging improved
+- check whether the connection pool is stopped thanks to mviazovskyi
 
 ## [3.5.5] - 2025-10-01
 - Version bump to 3.5.5
