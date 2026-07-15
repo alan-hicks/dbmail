@@ -545,11 +545,6 @@ void GetDBParams(void)
 		db_params.connection_pool_timeout = DEFAULT_CONNECTION_POOL_TIMEOUT;
 	}
 
-	/* a zero/garbage value would make db_con_get exit immediately whenever
-	 * the pool is stopped, including during a transient reconnect */
-	if (db_params.connection_pool_timeout == 0)
-		db_params.connection_pool_timeout = DEFAULT_CONNECTION_POOL_TIMEOUT;
-
 	if (strcmp(db_params.pfx, "\"\"") == 0) {
 		/* FIXME: It appears that when the empty string is quoted
 		 * that the quotes themselves are returned as the value. */
