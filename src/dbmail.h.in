@@ -307,6 +307,12 @@
 #define DEF_QUERYSIZE (32*1024)
 #define DEF_FRAGSIZE 256
 
+/* Default seconds to wait for a stopped connection pool before exiting.
+ * Long enough to ride out a transient database reconnect, short enough that a
+ * pool that stays stopped eventually makes the process exit with EX_TEMPFAIL so
+ * the service manager can restart it. */
+#define DEFAULT_CONNECTION_POOL_TIMEOUT 90
+
 /** default table prefix */
 #define DEFAULT_DBPFX "dbmail_"
 
