@@ -4288,7 +4288,7 @@ int db_user_create(const char *username, const char *password, const char *encty
 	if (db_user_exists(username, &existing_user_idnr))
 		return TRUE;
 
-	if (strlen(password) >= 128) {
+	if (strlen(password) > 130) {
 		TRACE(TRACE_ERR, "password length is insane");
 		return DM_EQUERY;
 	}
