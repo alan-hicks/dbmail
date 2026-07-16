@@ -358,14 +358,14 @@ AC_DEFUN([AC_COMPILE_WARNINGS],
 [AC_MSG_CHECKING(maximum warning verbosity option)
 if test -n "$CXX"; then
 	if test "$GXX" = "yes"; then
-		ac_compile_warnings_opt='-Wall'
+    ac_compile_warnings_opt='-Wall -Wno-stringop-overread -Wno-format-extra-args -Wno-stringop-truncation -Wno-unused-result -Wno-clobbered -Wno-cast-function-type'
 	fi
 	CXXFLAGS="$CXXFLAGS $ac_compile_warnings_opt"
 	ac_compile_warnings_msg="$ac_compile_warnings_opt for C++"
 fi
 if test -n "$CC"; then
 	if test "$GCC" = "yes"; then
-		ac_compile_warnings_opt='-W -Wall -Wextra -Wpointer-arith -Wstrict-prototypes'
+		ac_compile_warnings_opt=''
 	fi
 	CFLAGS="$CFLAGS $ac_compile_warnings_opt"
 	ac_compile_warnings_msg="$ac_compile_warnings_msg $ac_compile_warnings_opt for C"
