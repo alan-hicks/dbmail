@@ -344,7 +344,7 @@ Connection_T db_con_get(void)
 			k = ConnectionPool_reapConnections(pool);
 			TRACE(TRACE_INFO, "Database reaper closed [%d] stale connections", k);
 		}
-		if (i >= db_params.connection_pool_timeout) {
+		if ((unsigned int)i >= db_params.connection_pool_timeout) {
 			TRACE(TRACE_ALERT, "Connection pool stopped for [%d] sec, timed out, exiting", i);
 			exit(EX_TEMPFAIL);
 		}
