@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [tba] - 0000-00-00
+- Changing passwords completes with errors reported by nauftre, now fixed
+
 ## [3.5.6] - 2026-07-15
 - Config option reuseport added thanks to benibr
 - Database pool debug info added for size and active
