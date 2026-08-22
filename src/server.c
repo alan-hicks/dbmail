@@ -81,12 +81,13 @@ pthread_mutex_t selfpipe_lock;
 static void cb_queue_drain(int fd, short what UNUSED, void *arg UNUSED)
 {
 	char buf[1024];
-	event_del(heartbeat);
-	dm_queue_drain();
+	ssize_t r;
 	PLOCK(selfpipe_lock);
-	if (read(fd, buf, sizeof(buf))) { /* ignore */ }
+	do {
+		r = read(fd, buf, sizeof(buf));
+	} while (r == sizeof(buf));
 	PUNLOCK(selfpipe_lock);
-	event_add(heartbeat, NULL);
+	dm_queue_drain();
 }
 
 
@@ -100,7 +101,7 @@ void dm_queue_heartbeat(void)
 
 	pthread_mutex_init(&selfpipe_lock, NULL);
 
-	heartbeat = event_new(evbase, selfpipe[0], EV_READ, cb_queue_drain, NULL);
+	heartbeat = event_new(evbase, selfpipe[0], EV_READ|EV_PERSIST, cb_queue_drain, NULL);
 	event_add(heartbeat, NULL);
 }
 
