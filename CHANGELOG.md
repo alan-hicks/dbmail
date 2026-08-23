@@ -21,6 +21,7 @@ All notable changes to this project will be documented in this file.
 - Configure scripts updated to Autoconf 2.73
 - auth failure logging improved
 - check whether the connection pool is stopped thanks to mviazovskyi
+- lost wakeup in cb_queue_drain() fixed thanks to mviazovskyi
 
 ## [3.5.5] - 2025-10-01
 - Version bump to 3.5.5
