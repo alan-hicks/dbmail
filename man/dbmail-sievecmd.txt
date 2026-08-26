@@ -13,7 +13,7 @@ dbmail-sievecmd [common options] -u username --list
 dbmail-sievecmd [common options] -u username --activate scriptname
 dbmail-sievecmd [common options] -u username --deactivate scriptname
 dbmail-sievecmd [common options] -u username --show scriptname
-dbmail-sievecmd [common options] -u username --import file
+dbmail-sievecmd [common options] -u username --import scriptname file
 dbmail-sievecmd [common options] -u username --edit scriptname
 dbmail-sievecmd [common options] -u username --remove scriptname
 ....
@@ -44,8 +44,14 @@ Deactivates scriptname if it was active.
 -c, --show scriptname::
 Show the named script.
 
+-i, --import scriptname file::
+Creates a script called scriptname by importing file.
+
 -i, --import scriptname < file::
 Creates a script called scriptname by importing file.
+
+-i, --import scriptname::
+Creates a script called scriptname by importing from STDIN.
 
 -e, --edit scriptname::
 Edit the contents of the named script +

@@ -47,22 +47,22 @@ int do_showhelp(void)
 //	0........10........20........30........40........50........60........70........80
 	"Use this program to manage your users' Sieve scripts.\n"
 	"See the man page for more info. Summary:\n\n"
-	"  -u, --user username        Username of script user \n"
-	"  -l, --list                 List scripts belonging to user \n"
-	"  -a, --activate scriptname  Activate the named script \n"
-	"                             (only one script can be active; \n"
-	"                             deactivates any others) \n"
-	"  -d, --deactivate scriptname Deactivate the named script \n"
-	"  -c, --show scriptname      Show the contents of the named script\n"
-	"  -e, --edit scriptname      Edit the contents of the named script\n"
-	"                             (if no script is given, the active \n"
-	"                             script is shown) \n"
-	"  -i, --import scriptname < file Import the named script from file \n"
-	"                             (a single dash, -, reads input \n"
-	"                             from STDIN) \n"
-	"  -r, --remove scriptname    Remove the named script \n"
-	"                             (if script was active, no script is \n"
-	"                             active after deletion) \n"
+	"  -u, --user username            Username of script user\n"
+	"  -l, --list                     List scripts belonging to user\n"
+	"  -a, --activate scriptname      Activate the named script\n"
+	"                                 (only one script can be active;\n"
+	"                                 deactivates any others)\n"
+	"  -d, --deactivate scriptname    Deactivate the named script\n"
+	"  -c, --show scriptname          Show the contents of the named script\n"
+	"  -e, --edit scriptname          Edit the contents of the named script\n"
+	"                                 (if no script is given, the active\n"
+	"                                 script is shown)\n"
+	"  -i, --import scriptname file   Import the named script from file\n"
+	"  -i, --import scriptname < file Import the named script from file\n"
+	"  -i, --import scriptname        Import the named script from STDIN\n"
+	"  -r, --remove scriptname        Remove the named script\n"
+	"                                 (if script was active, no script is\n"
+	"                                 active after deletion)\n"
 
 	"\nCommon options for all DBMail utilities:\n"
 	"  -f, --config file  specify an alternative config file\n"
@@ -119,7 +119,7 @@ int main(int argc, char *argv[])
 	};
 	/* Check for commandline options. */
 	while ((opt = getopt_long(argc, argv,
-		"a::d::i:c::r:u:le::" /* Major modes */
+		"u:la:d:c:e:i:r:" /* Major modes */
 		"f:qyvVh", /* Common options */
 		long_options, &option_index)) != -1) {
 
@@ -129,27 +129,37 @@ int main(int argc, char *argv[])
 			break;
 		case 'a': /* activate */
 			activate = 1;
-			goto major_script;
-		case 'd': /* deactivate */
-			deactivate = 1;
-			goto major_script;
-		case 'i': /* import */
-			import = 1;
-			goto major_script;
-		case 'r': /* remove */
-			remove = 1;
-			goto major_script;
-
-		major_script:
-			if (!optarg) {
-				/* Need optarg */
-				qprintf("Please supply a script name\n");
-			} else if (!script_name) {
+			if (optarg) {
 				qprintf("Using script: [%s]\n", optarg);
 				script_name = g_strdup(optarg);
-			} else if (!script_source) {
+			}
+			break;
+		case 'd': /* deactivate */
+			deactivate = 1;
+			if (optarg) {
 				qprintf("Using script: [%s]\n", optarg);
-				script_source = g_strdup(optarg);
+				script_name = g_strdup(optarg);
+			}
+			break;
+		case 'i': /* import */
+			import = 1;
+			if (optarg) {
+				qprintf("Using script: [%s]\n", optarg);
+				script_name = g_strdup(optarg);
+			}
+			if (optind < argc) {
+				// Assume the next argument is a file name
+				qprintf("Using input file: [%s]\n", argv[argc - 1]);
+				script_source = g_strdup(argv[argc - 1]);
+			} else {
+				qprintf("Using input from stdin\n");
+			}
+			break;
+		case 'r': /* remove */
+			remove = 1;
+			if (optarg) {
+				qprintf("Using script: [%s]\n", optarg);
+				script_name = g_strdup(optarg);
 			}
 			break;
 		case 'e':
@@ -181,11 +191,6 @@ int main(int argc, char *argv[])
 		case 'l':
 			list = 1;
 			break;
-
-		/* Common options */
-		/*case 'i': FIXME: this is from user.c, but we're using -i for importing.
-			printf("Interactive console is not supported in this release.\n");
-			return 1;*/
 
 		case 'f':
 			if (optarg && strlen(optarg) > 0) {
@@ -378,9 +383,7 @@ int do_deactivate(uint64_t user_idnr, char *name)
 		qprintf("Error deactivating script [%s].\n", name);
 		return -1;
 	}
-	qprintf("Script [%s] is now deactivated."
-		" No scripts are currently active.\n",
-		name);
+	qprintf("Script [%s] is now deactivated.\n", name);
 
 	g_free(scriptname);
 
