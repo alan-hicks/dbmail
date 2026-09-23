@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - Close the client socket only once in ci_close thanks to mviazovskyi
 - Log the event loop failure and exit non-zero thanks to mviazovskyi
 - dbmail-sievecmd -a works as expected thanks to GuusHoutzager for reporting
+- Log format IPv4 and IPv6 instead of IPv6 thanks to jaro3 reporting the anomaly
 
 ## [3.5.6] - 2026-07-15
 - Config option reuseport added thanks to benibr
